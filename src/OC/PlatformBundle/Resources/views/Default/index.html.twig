@@ -1,0 +1,17 @@
+{# src/OC/PlatformBundle/Resources/views/Default/index.html.twig #}
+
+<html>
+  <body>
+    Hello {{ name }}!
+    {# Dans une vue Twig, en considérant bien sûr
+   que la variable advert_id est disponible #}
+
+<form action="{{ path('oc_platform_view', {'id':7}) }}" method="POST">
+	<input name="pseudo" value="blcg"/>
+	<input type="submit"/>
+</form >
+<a href="{{ path('oc_platform_view', { 'id': 7<p></p>}) }}">
+    Lien vers l'annonce d'id 
+</a>
+  </body>
+</html>
