@@ -2,14 +2,18 @@
 
 <!DOCTYPE HTML>
 <html>
-  <head>
+<head>
     <meta charset="utf-8">
     <title>{% block title %}OC Plateforme{% endblock %}</title>
-  </head>
-  <body>
+</head>
+<body>
 
-    {% block body %}
-    {% endblock %}
+<div id="menu">
+    {{ render(controller("OCPlatformBundle:Advert:menu")) }}
+</div>
 
-  </body>
+{% block body %}
+{% endblock %}
+
+</body>
 </html>
