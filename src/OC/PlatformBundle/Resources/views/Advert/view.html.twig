@@ -10,13 +10,13 @@
 
     <p>
       {# On affiche tous les messages flash dont le nom est « info » #}
-      {% for message in app.session.flashbag.get('info') %}
+      {% for message in app.session.flashbag.get('notice') %}
         <p>Message flash : {{ message }}</p>
       {% endfor %}
     </p>
 
     <p>
-      Ici nous pourrons lire l'annonce ayant comme id : {{ id }}<br />
+      Ici nous pourrons lire l'annonce ayant comme id : {{ advert.id }}<br />
       Mais pour l'instant, nous ne savons pas encore le faire, cela viendra !
     </p>
   </body>

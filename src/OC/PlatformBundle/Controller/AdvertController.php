@@ -4,6 +4,7 @@
 
 namespace OC\PlatformBundle\Controller;
 
+use OC\PlatformBundle\Entity\Advert;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -26,32 +27,58 @@ class AdvertController extends Controller
     return $this->render('OCPlatformBundle:Advert:index.html.twig');
   }
 
-  public function viewAction($id)
-  {
-    // Ici, on récupérera l'annonce correspondante à l'id $id
+    public function viewAction($id)
+    {
+        // On récupère le repository
+        $repository = $this->getDoctrine()
+            ->getManager()
+            ->getRepository('OCPlatformBundle:Advert')
+        ;
 
-    return $this->render('OCPlatformBundle:Advert:view.html.twig', array(
-      'id' => $id
-    ));
-  }
+        // On récupère l'entité correspondante à l'id $id
+        $advert = $repository->find($id);
 
-  public function addAction(Request $request)
-  {
-    // La gestion d'un formulaire est particulière, mais l'idée est la suivante :
+        // $advert est donc une instance de OC\PlatformBundle\Entity\Advert
+        // ou null si l'id $id  n'existe pas, d'où ce if :
+        if (null === $advert) {
+            throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+        }
 
-    // Si la requête est en POST, c'est que le visiteur a soumis le formulaire
-    if ($request->isMethod('POST')) {
-      // Ici, on s'occupera de la création et de la gestion du formulaire
-
-      $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
-
-      // Puis on redirige vers la page de visualisation de cettte annonce
-      return $this->redirect($this->generateUrl('oc_platform_view', array('id' => 5)));
+        // Le render ne change pas, on passait avant un tableau, maintenant un objet
+        return $this->render('OCPlatformBundle:Advert:view.html.twig', array(
+            'advert' => $advert
+        ));
     }
 
-    // Si on n'est pas en POST, alors on affiche le formulaire
-    return $this->render('OCPlatformBundle:Advert:add.html.twig');
-  }
+    public function addAction(Request $request)
+    {
+        // Création de l'entité
+        $advert = new Advert();
+        $advert->setTitle('test.');
+        $advert->setAuthor('Alexandre');
+        $advert->setContent("Nous recherchons un test…");
+        $advert->setDate(new \Datetime());
+        // On peut ne pas définir ni la date ni la publication,
+        // car ces attributs sont définis automatiquement dans le constructeur
+
+        // On récupère l'EntityManager
+        $em = $this->getDoctrine()->getManager();
+
+        // Étape 1 : On « persiste » l'entité
+        $em->persist($advert);
+
+        // Étape 2 : On « flush » tout ce qui a été persisté avant
+        $em->flush();
+
+        // Reste de la méthode qu'on avait déjà écrit
+        $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+        return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+        /*if ($request->isMethod('POST')) {
+            $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+            return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+        }*/
+        //return $this->render('OCPlatformBundle:Advert:add.html.twig');
+    }
 
   public function editAction($id, Request $request)
   {
