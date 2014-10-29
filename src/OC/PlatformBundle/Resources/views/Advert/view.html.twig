@@ -6,7 +6,7 @@
     <title>Bienvenue sur ma première page avec OpenClassrooms !</title>
   </head>
   <body>
-    <h1>Affichage d'une annonce</h1>
+    <h1>{{advert.title}}</h1>
 
     <p>
       {# On affiche tous les messages flash dont le nom est « info » #}
@@ -16,8 +16,10 @@
     </p>
 
     <p>
-      Ici nous pourrons lire l'annonce ayant comme id : {{ advert.id }}<br />
-      Mais pour l'instant, nous ne savons pas encore le faire, cela viendra !
+      {{advert.content}}
     </p>
+    {% if advert.image is not null %}
+  <img src="{{ advert.image.url }}" alt="{{ advert.image.alt }}">
+  {% endif %}
   </body>
 </html>
