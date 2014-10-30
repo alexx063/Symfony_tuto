@@ -21,5 +21,19 @@
     {% if advert.image is not null %}
   <img src="{{ advert.image.url }}" alt="{{ advert.image.alt }}">
   {% endif %}
+   {% for candidature in listApplications %}
+        <h6> {{ candidature.author }}</h6>
+          <p> {{ candidature.content }}</p>
+    {% endfor %}
+
+    {% if not advert.categories.empty %}
+  <p>
+    Cette annonce est parue dans les catégories suivantes :
+    {% for category in advert.categories %}
+      {{ category.name }}{% if not loop.last %}, {% endif %}
+    {% endfor %}
+  </p>
+{% endif %}
+   
   </body>
 </html>
