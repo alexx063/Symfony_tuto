@@ -1,7 +1,7 @@
 <?php
 
 namespace OC\PlatformBundle\Entity;
-
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -12,12 +12,19 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Advert
 {
+
     public function __construct()
     {
       // Par défaut, la date de l'annonce est la date d'aujourd'hui
       $this->date = new \Datetime();
       $this->categories = new ArrayCollection();
+      $this->applications = new ArrayCollection();
     }
+    
+    /**
+   * @ORM\OneToMany(targetEntity="OC\PlatformBundle\Entity\Application", mappedBy="advert")
+   */
+    private $applications; // Notez le « s », une annonce est liée à plusieurs candidatures
 
     /**
     * @ORM\ManyToMany(targetEntity="OC\PlatformBundle\Entity\Category", cascade={"persist"})
@@ -249,5 +256,38 @@ class Advert
     public function getCategories()
     {
         return $this->categories;
+    }
+
+    /**
+     * Add applications
+     *
+     * @param \OC\PlatformBundle\Entity\Application $applications
+     * @return Advert
+     */
+    public function addApplication(\OC\PlatformBundle\Entity\Application $applications)
+    {
+        $this->applications[] = $applications;
+    
+        return $this;
+    }
+
+    /**
+     * Remove applications
+     *
+     * @param \OC\PlatformBundle\Entity\Application $applications
+     */
+    public function removeApplication(\OC\PlatformBundle\Entity\Application $applications)
+    {
+        $this->applications->removeElement($applications);
+    }
+
+    /**
+     * Get applications
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getApplications()
+    {
+        return $this->applications;
     }
 }

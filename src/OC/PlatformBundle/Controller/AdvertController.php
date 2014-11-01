@@ -7,6 +7,8 @@ namespace OC\PlatformBundle\Controller;
 use OC\PlatformBundle\Entity\Advert;
 use OC\PlatformBundle\Entity\Image;
 use OC\PlatformBundle\Entity\Application;
+use OC\PlatformBundle\Entity\AdvertSkill;
+
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -47,14 +49,21 @@ class AdvertController extends Controller
           ->findBy(array('advert' => $advert))
         ;
 
+        // On récupère maintenant la liste des AdvertSkill
+        $listAdvertSkills = $em
+          ->getRepository('OCPlatformBundle:AdvertSkill')
+          ->findBy(array('advert' => $advert))
+        ;
+
         return $this->render('OCPlatformBundle:Advert:view.html.twig', array(
           'advert'           => $advert,
-          'listApplications' => $listApplications
+          'listApplications' => $listApplications,
+           'listAdvertSkills' => $listAdvertSkills
         ));
 
     }
 
-    public function addAction(Request $request)
+    /*public function addAction(Request $request)
     {
         // Création de l'entité
         $advert = new Advert();
@@ -97,12 +106,44 @@ class AdvertController extends Controller
         // Reste de la méthode qu'on avait déjà écrit
         $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
         return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
-        /*if ($request->isMethod('POST')) {
-            $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
-            return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
-        }*/
+        //if ($request->isMethod('POST')) {
+        //    $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+         //   return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+        //}
         //return $this->render('OCPlatformBundle:Advert:add.html.twig');
+    }*/
+     public function addAction(Request $request)
+  {
+    // On récupère l'EntityManager
+    $em = $this->getDoctrine()->getManager();
+
+    // Création de l'entité Advert
+    $advert = new Advert();
+    $advert->setTitle('Recherche développeur Symfony2.');
+    $advert->setAuthor('Alexandre');
+    $advert->setContent("Nous recherchons un développeur Symfony2 débutant sur Lyon. Blabla…");
+
+    // On récupère toutes les compétences possibles
+    $listSkills = $em->getRepository('OCPlatformBundle:Skill')->findAll();
+
+
+    foreach ($listSkills as $skill) {
+      $advertSkill = new AdvertSkill();
+      $advertSkill->setAdvert($advert);
+      $advertSkill->setSkill($skill);
+      $advertSkill->setLevel('Expert');
+      $em->persist($advertSkill);
     }
+
+    // Doctrine ne connait pas encore l'entité $advert. Si vous n'avez pas définit la relation AdvertSkill
+    // avec un cascade persist (ce qui est le cas si vous avez utilisé mon code), alors on doit persister $advert
+    $em->persist($advert);
+
+    // On déclenche l'enregistrement
+    $em->flush();
+
+     return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+  }
 
   public function editAction($id, Request $request)
   {
