@@ -3,6 +3,8 @@
 namespace OC\PlatformBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
+
 
 /**
  * Advert
@@ -21,6 +23,11 @@ class Advert
       $this->categories = new ArrayCollection();
       $this->applications = new ArrayCollection();
     }
+    /**
+   * @Gedmo\Slug(fields={"title"})
+   * @ORM\Column(length=128, unique=true)
+   */
+  private $slug;
     
     /**
    * @ORM\OneToMany(targetEntity="OC\PlatformBundle\Entity\Application", mappedBy="advert")
@@ -342,5 +349,51 @@ class Advert
     public function decreaseApplication()
     {
         $this->nbApplications--;
+    }
+
+    /**
+     * Set slug
+     *
+     * @param string $slug
+     * @return Advert
+     */
+    public function setSlug($slug)
+    {
+        $this->slug = $slug;
+
+        return $this;
+    }
+
+    /**
+     * Get slug
+     *
+     * @return string 
+     */
+    public function getSlug()
+    {
+        return $this->slug;
+    }
+
+    /**
+     * Set nbApplications
+     *
+     * @param integer $nbApplications
+     * @return Advert
+     */
+    public function setNbApplications($nbApplications)
+    {
+        $this->nbApplications = $nbApplications;
+
+        return $this;
+    }
+
+    /**
+     * Get nbApplications
+     *
+     * @return integer 
+     */
+    public function getNbApplications()
+    {
+        return $this->nbApplications;
     }
 }
