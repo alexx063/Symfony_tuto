@@ -397,4 +397,3 @@ class Advert
         return $this->nbApplications;
     }
 }
-lolol

@@ -5,6 +5,8 @@
 namespace OC\PlatformBundle\Controller;
 
 use OC\PlatformBundle\Entity\Advert;
+use OC\PlatformBundle\Form\AdvertType;
+use OC\PlatformBundle\Form\AdvertEditType;
 use OC\PlatformBundle\Entity\Image;
 use OC\PlatformBundle\Entity\Application;
 use OC\PlatformBundle\Entity\AdvertSkill;
@@ -63,8 +65,7 @@ class AdvertController extends Controller
 
     }
 
-    /*public function addAction(Request $request)
-    {
+    /*public function addAction(Request $request){
         // Création de l'entité
         $advert = new Advert();
         $advert->setTitle('Un article de malade !');
@@ -84,7 +85,7 @@ class AdvertController extends Controller
         $application2 = new Application();
         $application2->setAuthor('Pierre');
         $application2->setContent("Je suis très motivé.");
-        
+
         // On lie l'image à l'annonce
         $advert->setImage($image);
 
@@ -112,7 +113,7 @@ class AdvertController extends Controller
         //}
         //return $this->render('OCPlatformBundle:Advert:add.html.twig');
     }*/
-     public function addAction(Request $request)
+    /* public function addAction(Request $request)
   {
     // On récupère l'EntityManager
     $em = $this->getDoctrine()->getManager();
@@ -143,36 +144,73 @@ class AdvertController extends Controller
     $em->flush();
 
      return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+  }*/
+
+
+   public function addAction(Request $request)
+  {
+    $advert = new Advert();
+
+    // J'ai raccourci cette partie, car c'est plus rapide à écrire !
+    $form = $this->get('form.factory')->create(new AdvertType, $advert);
+
+    if ($form->handleRequest($request)->isValid()) {
+      // On l'enregistre notre objet $advert dans la base de données, par exemple
+      $em = $this->getDoctrine()->getManager();
+      $em->persist($advert);
+      $em->flush();
+
+      $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+      return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+    }
+
+    // À ce stade, le formulaire n'est pas valide car :
+    // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+    // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+    return $this->render('OCPlatformBundle:Advert:add.html.twig', array(
+      'form' => $form->createView(),
+    ));
   }
 
   public function editAction($id, Request $request)
   {
-    $em = $this->getDoctrine()->getManager();
-
-    // On récupère l'annonce $id
-    $advert = $em->getRepository('OCPlatformBundle:Advert')->find($id);
+     $advert = $this->getDoctrine()
+    ->getManager()
+    ->getRepository('OCPlatformBundle:Advert')
+    ->find($id)
+    ;
 
     if (null === $advert) {
       throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
     }
 
-    // La méthode findAll retourne toutes les catégories de la base de données
-    $listCategories = $em->getRepository('OCPlatformBundle:Category')->findAll();
+    // J'ai raccourci cette partie, car c'est plus rapide à écrire !
+    $form = $this->get('form.factory')->create(new AdvertEditType, $advert);
 
-    // On boucle sur les catégories pour les lier à l'annonce
-    foreach ($listCategories as $category) {
-      $advert->addCategory($category);
+    // On fait le lien Requête <-> Formulaire
+    // À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
+    $form->handleRequest($request);
+
+    // On vérifie que les valeurs entrées sont correctes
+    // (Nous verrons la validation des objets en détail dans le prochain chapitre)
+    if ($form->isValid()) {
+      // On l'enregistre notre objet $advert dans la base de données, par exemple
+      $em = $this->getDoctrine()->getManager();
+      $em->persist($advert);
+      $em->flush();
+
+      $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+
+      // On redirige vers la page de visualisation de l'annonce nouvellement créée
+      return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
     }
 
-    // Pour persister le changement dans la relation, il faut persister l'entité propriétaire
-    // Ici, Advert est le propriétaire, donc inutile de la persister car on l'a récupérée depuis Doctrine
-
-    // Étape 2 : On déclenche l'enregistrement
-    $em->flush();
-
-    // Même mécanisme que pour l'ajout
-      $request->getSession()->getFlashBag()->add('notice', 'Annonce bien modifiée.');
-    return $this->redirect($this->generateUrl('oc_platform_view', array('id' => $advert->getId())));
+    // À ce stade, le formulaire n'est pas valide car :
+    // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+    // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+    return $this->render('OCPlatformBundle:Advert:add.html.twig', array(
+      'form' => $form->createView(),
+    ));
   }
 
   public function deleteAction($id)
@@ -201,7 +239,7 @@ class AdvertController extends Controller
 
   }
 
-    public function menuAction()
+    /*public function menuAction()
     {
         // On fixe en dur une liste ici, bien entendu par la suite
         // on la récupérera depuis la BDD !
@@ -216,5 +254,22 @@ class AdvertController extends Controller
             // les variables nécessaires au template !
             'listAdverts' => $listAdverts
         ));
+    }*/
+
+    public function menuAction($limit = 3)
+    {
+      $listAdverts = $this->getDoctrine()
+        ->getManager()
+        ->getRepository('OCPlatformBundle:Advert')
+        ->findBy(
+          array(),                 // Pas de critère
+          array('date' => 'desc'), // On trie par date décroissante
+          $limit,                  // On sélectionne $limit annonces
+          0                        // À partir du premier
+      );
+
+      return $this->render('OCPlatformBundle:Advert:menu.html.twig', array(
+        'listAdverts' => $listAdverts
+      ));
     }
 }
